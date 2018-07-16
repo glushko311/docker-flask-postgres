@@ -1,6 +1,6 @@
 from unittest import TestLoader, TestSuite, TextTestRunner
 
-from main_test import TestSuit1
+from .main_test import TestSuit1
 # from .do_continue import TestDoContinue
 # from .envelopes_analysis import TestEnvelopeEntry
 # from .fibonacci_range import TestFibonacci
