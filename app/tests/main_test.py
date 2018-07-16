@@ -1,13 +1,13 @@
 from unittest import TestCase
 
 class TestSuit1(TestCase):
-    def test_single(self):
+    def test_one(self):
         return self.assertEqual(1, 1)
 		
     def test_two(self):
         return self.assertEqual(2, 2)
 
-    def test_two(self):
+    def test_three(self):
         return self.assertEqual(3, 3)
 
 if __name__ == "__main__":
