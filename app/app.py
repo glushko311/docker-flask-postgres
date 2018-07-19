@@ -1,5 +1,5 @@
 import time
-from flask import Flask, render_template, flash, redirect, request, url_for
+from flask import Flask, render_template, flash, redirect, request, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 import json
 
@@ -48,9 +48,11 @@ def database_initialization_sequence():
     db.session.add(test_rec)
     db.session.rollback()
     db.session.commit()
+
+
 @app.route('/smoke', methods=['GET'])
 def smoke():
-    return json.dumps(["Hello world", "Buenos dias"])
+    return Response(json.dumps(["Hello world", "Buenos dias"]), status=200)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
