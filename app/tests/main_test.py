@@ -10,5 +10,8 @@ class TestSuit1(TestCase):
     def test_three(self):
         return self.assertEqual(3, 3)
 
+    def test_smoke(self):
+        pass
+
 if __name__ == "__main__":
     TestSuit1()
