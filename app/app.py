@@ -1,4 +1,5 @@
 import time
+import datetime
 from flask import Flask, render_template, flash, redirect, request, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
 import json
@@ -36,7 +37,34 @@ class students(db.Model):
         self.name = name
         self.city = city
         self.addr = addr
+#
+# class User(db.Model):
+#     id = db.Column('id', db.Integer, primary_key=True)
+#     login = db.Column('login', db.String, unique=True, not_null=True)
+#     email = db.Column('email', db.String, unique=True, not_null=True)
+#     password = db.Column('password', db.String, not_null=True)
+#     reg_date = db.Column('reg_date', db.Date, not_null=True)
+#     first_name = db.Column('first_name', db.String)
+#     last_name = db.Column('last_name', db.String)
+#     telephone = db.Column('telephone', db.String)
+#     last_login_date = db.Column('reg_date', db.Date, not_null=True)
+#     def __init__(self, login, email, password):
+#         self.login = login
+#         self.password = password
+#         self.email = email
+#         self.reg_date = datetime.datetime.now()
 
+class User(db.Model):
+    id = db.Column('id', db.Integer, primary_key=True)
+    login = db.Column('login', db.String(100), unique=True, nullable=False)
+    email = db.Column('email', db.String, unique=True, nullable=False)
+    password = db.Column('password', db.String, nullable=False)
+    reg_date = db.Column('reg_date', db.Date, nullable=False)
+    def __init__(self, login, email, password):
+        self.login = login
+        self.password = password
+        self.email = email
+        self.reg_date = datetime.datetime.now()
 
 def database_initialization_sequence():
     db.create_all()
@@ -50,9 +78,18 @@ def database_initialization_sequence():
     db.session.commit()
 
 
+@app.route('/user', methods=['POST'])
+def create_user():
+    return Response(json.dumps("Create new user - OK"), status=200)
+
 @app.route('/smoke', methods=['GET'])
 def smoke():
-    return Response(json.dumps(["Hello world", "Buenos dias"]), status=200)
+    resp = Response(json.dumps("OK"), status=200)
+    #resp = Response("OK", status=200)
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Content-Type'] = 'application/json'
+    return resp
+    # return Response(json.dumps("OK"), status=200)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -73,6 +110,7 @@ def home():
 
 
 if __name__ == '__main__':
+
     dbstatus = False
     while dbstatus == False:
         try:
