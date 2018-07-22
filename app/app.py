@@ -60,11 +60,24 @@ class User(db.Model):
     email = db.Column('email', db.String, unique=True, nullable=False)
     password = db.Column('password', db.String, nullable=False)
     reg_date = db.Column('reg_date', db.Date, nullable=False)
+
     def __init__(self, login, email, password):
         self.login = login
         self.password = password
         self.email = email
         self.reg_date = datetime.datetime.now()
+
+    def __str__(self):
+        return "User login - {0}; Email - {2}; Registered - {3}".\
+            format(self.login, self.password, self.email, str(self.reg_date))
+
+    @staticmethod
+    def validate_user_create_data(req_args):
+        if 'password' in req_args and 'login' in req_args and 'email' in req_args:
+            return True
+        else:
+            return False
+
 
 def database_initialization_sequence():
     db.create_all()
@@ -77,14 +90,17 @@ def database_initialization_sequence():
     db.session.rollback()
     db.session.commit()
 
-
-
 @app.route('/user', methods=['POST'])
 def create_user():
     req_args = request.args
-    msg = "Validation NOT OK"
-    if 'password' in req_args and 'login' in req_args and 'email' in req_args:
-        msg = "REQUIRED DATA OK"
+    if User.validate_user_create_data(req_args):
+        user = User(req_args['login'], req_args['password'], req_args['email'])
+        msg = "USER REGISTRATION SUCCESSFUL"
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except Exception as e:
+            msg = str(e)
         resp = Response(json.dumps(msg), status=200)
     else:
         msg = "REQUIRED DATA NOT VALID"
