@@ -78,9 +78,20 @@ def database_initialization_sequence():
     db.session.commit()
 
 
+
 @app.route('/user', methods=['POST'])
 def create_user():
-    return Response(json.dumps("Create new user - OK"), status=200)
+    req_args = request.args
+    msg = "Validation NOT OK"
+    if 'password' in req_args and 'login' in req_args and 'email' in req_args:
+        msg = "REQUIRED DATA OK"
+        resp = Response(json.dumps(msg), status=200)
+    else:
+        msg = "REQUIRED DATA NOT VALID"
+        resp = Response(json.dumps(msg), status=400)
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Content-Type'] = 'application/json'
+    return resp
 
 @app.route('/smoke', methods=['GET'])
 def smoke():
