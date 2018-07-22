@@ -90,6 +90,15 @@ def database_initialization_sequence():
     db.session.rollback()
     db.session.commit()
 
+@app.route('/user', methods=['GET'])
+def get_all_users():
+    users = User.query.all()
+    users = list(map(lambda x: str(x), users))
+    resp = Response(json.dumps(users), status=200)
+    resp.headers['Access-Control-Allow-Origin'] = '*'
+    resp.headers['Content-Type'] = 'application/json'
+    return resp
+
 @app.route('/user', methods=['POST'])
 def create_user():
     req_args = request.args
