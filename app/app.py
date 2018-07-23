@@ -60,12 +60,13 @@ class User(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
     login = db.Column('login', db.String(100), unique=True, nullable=False)
     email = db.Column('email', db.String, unique=True, nullable=False)
-    password = db.Column('password', db.String, nullable=False)
+    password = db.Column('password', db.LargeBinary, nullable=False)
+    salt = db.Column('salt', db.LargeBinary, nullable=False)
     reg_date = db.Column('reg_date', db.Date, nullable=False)
 
     @staticmethod
-    def hash_password(password, salt, iterations=100001, encoding='utf-8'):
-
+    def hash_password(password, salt_len=16, iterations=100001, encoding='utf-8'):
+        salt = os.urandom(salt_len)
         hashed_password = hashlib.pbkdf2_hmac(
             hash_name='sha256',
             password=bytes(password, encoding),
@@ -76,18 +77,19 @@ class User(db.Model):
 
     @staticmethod
     def generate_salt(salt_len):
-        return os.urandom(salt_len)
+        return
 
     def __init__(self, login, email, password):
         self.login = login
-        salt = __class__.generate_salt(12)
-        self.password = str(__class__.hash_password(password, salt))
+        hashed_data = __class__.hash_password(password)
+        self.salt = hashed_data[0]
+        self.password = hashed_data[2]
         self.email = email
         self.reg_date = datetime.datetime.now()
 
     def __str__(self):
-        return "User login - {0};Password - {1}; Email - {2}; Registered - {3}".\
-            format(self.login, self.password, self.email, str(self.reg_date))
+        return "User login - {0}; Email - {1}; Registered - {2}; Password hash - {3}; Salt - {4}".\
+            format(self.login, self.email, str(self.reg_date), str(self.password), str(self.salt))
 
     @staticmethod
     def validate_user_create_data(req_args):
