@@ -12,6 +12,7 @@ DBHOST = 'db'
 DBPORT = '5432'
 DBNAME = 'testdb'
 
+
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///students.sqlite3'
 app.config['SQLALCHEMY_DATABASE_URI'] = \
@@ -23,6 +24,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = \
         db=DBNAME)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'foobarbaz'
+
 
 db = SQLAlchemy(app)
 
@@ -98,7 +100,7 @@ class User(db.Model):
     #     return "User login - {0}; Email - {1}; Registered - {2}; Password hash - {3}; Salt - {4}".\
     #         format(self.login, self.email, str(self.reg_date), str(self.password), str(self.salt))
     def __str__(self):
-        return "User login - {0}; Email - {1}; First_name - {2}; Last name - {3}; Phone - {4}". \
+        return "User login - {0}; Email - {1}; First_name - {2}; Last name - {3}; Phone - {4}".\
             format(self.login, self.email, self.first_name, self.last_name, self.phone)
 
     @staticmethod
@@ -129,9 +131,9 @@ def get_all_users():
     resp.headers['Content-Type'] = 'application/json'
     return resp
 
-
 @app.route('/user', methods=['POST'])
 def create_user():
+
     req_args = request.args
 
     if User.validate_user_create_data(req_args):
@@ -154,17 +156,14 @@ def create_user():
     resp.headers['Content-Type'] = 'application/json'
     return resp
 
-
 @app.route('/smoke', methods=['GET'])
 def smoke():
     resp = Response(json.dumps("OK"), status=200)
-    # resp = Response("OK", status=200)
+    #resp = Response("OK", status=200)
     resp.headers['Access-Control-Allow-Origin'] = '*'
     resp.headers['Content-Type'] = 'application/json'
     return resp
     # return Response(json.dumps("OK"), status=200)
-
-
 #
 # @app.route('/', methods=['GET', 'POST'])
 # def home():
