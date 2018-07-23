@@ -1,7 +1,9 @@
 import time
 import datetime
+import os
 from flask import Flask, render_template, flash, redirect, request, url_for, Response
 from flask_sqlalchemy import SQLAlchemy
+import hashlib
 import json
 
 DBUSER = 'marco'
@@ -27,17 +29,17 @@ app.secret_key = 'foobarbaz'
 db = SQLAlchemy(app)
 
 
-class students(db.Model):
-    id = db.Column('student_id', db.Integer, primary_key=True)
-    name = db.Column(db.String(100))
-    city = db.Column(db.String(50))
-    addr = db.Column(db.String(200))
-
-    def __init__(self, name, city, addr):
-        self.name = name
-        self.city = city
-        self.addr = addr
+# class students(db.Model):
+#     id = db.Column('student_id', db.Integer, primary_key=True)
+#     name = db.Column(db.String(100))
+#     city = db.Column(db.String(50))
+#     addr = db.Column(db.String(200))
 #
+#     def __init__(self, name, city, addr):
+#         self.name = name
+#         self.city = city
+#         self.addr = addr
+# #
 # class User(db.Model):
 #     id = db.Column('id', db.Integer, primary_key=True)
 #     login = db.Column('login', db.String, unique=True, not_null=True)
@@ -61,14 +63,30 @@ class User(db.Model):
     password = db.Column('password', db.String, nullable=False)
     reg_date = db.Column('reg_date', db.Date, nullable=False)
 
+    @staticmethod
+    def hash_password(password, salt, iterations=100001, encoding='utf-8'):
+
+        hashed_password = hashlib.pbkdf2_hmac(
+            hash_name='sha256',
+            password=bytes(password, encoding),
+            salt=salt,
+            iterations=iterations
+        )
+        return salt, iterations, hashed_password
+
+    @staticmethod
+    def generate_salt(salt_len):
+        return os.urandom(salt_len)
+
     def __init__(self, login, email, password):
         self.login = login
-        self.password = password
+        salt = __class__.generate_salt(12)
+        self.password = str(__class__.hash_password(password, salt))
         self.email = email
         self.reg_date = datetime.datetime.now()
 
     def __str__(self):
-        return "User login - {0}; Email - {2}; Registered - {3}".\
+        return "User login - {0};Password - {1}; Email - {2}; Registered - {3}".\
             format(self.login, self.password, self.email, str(self.reg_date))
 
     @staticmethod
@@ -79,16 +97,16 @@ class User(db.Model):
             return False
 
 
-def database_initialization_sequence():
-    db.create_all()
-    test_rec = students(
-            'John Doe',
-            'Los Angeles',
-            '123 Foobar Ave')
-
-    db.session.add(test_rec)
-    db.session.rollback()
-    db.session.commit()
+# def database_initialization_sequence():
+#     db.create_all()
+#     test_rec = students(
+#             'John Doe',
+#             'Los Angeles',
+#             '123 Foobar Ave')
+#
+#     db.session.add(test_rec)
+#     db.session.rollback()
+#     db.session.commit()
 
 @app.route('/user', methods=['GET'])
 def get_all_users():
@@ -103,7 +121,7 @@ def get_all_users():
 def create_user():
     req_args = request.args
     if User.validate_user_create_data(req_args):
-        user = User(req_args['login'], req_args['password'], req_args['email'])
+        user = User(req_args['login'], req_args['email'], req_args['password'])
         msg = "USER REGISTRATION SUCCESSFUL"
         try:
             db.session.add(user)
@@ -126,23 +144,23 @@ def smoke():
     resp.headers['Content-Type'] = 'application/json'
     return resp
     # return Response(json.dumps("OK"), status=200)
-
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    if request.method == 'POST':
-        if not request.form['name'] or not request.form['city'] or not request.form['addr']:
-            flash('Please enter all the fields', 'error')
-        else:
-            student = students(
-                    request.form['name'],
-                    request.form['city'],
-                    request.form['addr'])
-
-            db.session.add(student)
-            db.session.commit()
-            flash('Record was succesfully added')
-            return redirect(url_for('home'))
-    return render_template('show_all.html', students=students.query.all())
+#
+# @app.route('/', methods=['GET', 'POST'])
+# def home():
+#     if request.method == 'POST':
+#         if not request.form['name'] or not request.form['city'] or not request.form['addr']:
+#             flash('Please enter all the fields', 'error')
+#         else:
+#             student = students(
+#                     request.form['name'],
+#                     request.form['city'],
+#                     request.form['addr'])
+#
+#             db.session.add(student)
+#             db.session.commit()
+#             flash('Record was succesfully added')
+#             return redirect(url_for('home'))
+#     return render_template('show_all.html', students=students.query.all())
 
 
 if __name__ == '__main__':
@@ -155,5 +173,5 @@ if __name__ == '__main__':
             time.sleep(2)
         else:
             dbstatus = True
-    database_initialization_sequence()
+    # database_initialization_sequence()
     app.run(debug=True, host='0.0.0.0')
