@@ -46,56 +46,54 @@ paths:
         - application/xml
       parameters:
         - in: query
-          name: login 
+          name: login
           required: true
           type: string
-          minimum: 1
-          maximum: 100
           description: The user login.
-        - in: query  
-          name: email 
+        - in: query
+          name: email
           required: true
           type: string
-          minimum: 1
-          maximum: 100
           description: The user email.
-        - in: query  
-          name: password   
+        - in: query
+          name: password
           required: true
           type: string
-          minimum: 1
-          maximum: 100
           description: The user password.
-        - in: query  
-          name: first_name  
+        - in: query
+          name: first_name
           required: false
           type: string
-          minimum: 1
-          maximum: 100
           description: The user first name.
-        - in: query  
-          name: last_name  
+        - in: query
+          name: last_name
           required: false
           type: string
-          minimum: 1
-          maximum: 100
           description: The user last name.
-        - in: query  
-          name: phone  
+        - in: query
+          name: phone
           required: false
           type: string
-          minimum: 1
-          maximum: 100
           description: The user phone.
-
-          # name: body
-          # description: Created user object
-          # required: true
-          # schema:
-          #   $ref: '#/definitions/User'
       responses:
         default:
           description: successful operation
+    get:
+      tags:
+      - "user"
+      summary: "Get all users"
+      description: "Get all users for test add users in DATABASE"
+      operationId: "getAllUsers"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/User"
+    
 definitions:
   User:
     type: object
@@ -108,6 +106,8 @@ definitions:
       email:
         type: string
       password:
+        type: string
+      salt:
         type: string
       first_name:
         type: string
