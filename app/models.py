@@ -1,34 +1,8 @@
-import time
 import datetime
 import os
-from flask import Flask, render_template, flash, redirect, request, url_for, Response
-from flask_sqlalchemy import SQLAlchemy
 import hashlib
-import json
 
-# from models import User
-
-DBUSER = 'marco'
-DBPASS = 'foobarbaz'
-DBHOST = 'db'
-DBPORT = '5432'
-DBNAME = 'testdb'
-
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'postgresql+psycopg2://{user}:{passwd}@{host}:{port}/{db}'.format(
-        user=DBUSER,
-        passwd=DBPASS,
-        host=DBHOST,
-        port=DBPORT,
-        db=DBNAME)
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.secret_key = 'foobarbaz'
-
-
-db = SQLAlchemy(app)
-
+from app import db
 
 class User(db.Model):
     id = db.Column('id', db.Integer, primary_key=True)
@@ -83,59 +57,3 @@ class User(db.Model):
             return True
         else:
             return False
-
-
-@app.route('/user', methods=['GET'])
-def get_all_users():
-    users = User.query.all()
-    users = list(map(lambda x: str(x), users))
-    resp = Response(json.dumps(users), status=200)
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    resp.headers['Content-Type'] = 'application/json'
-    return resp
-
-@app.route('/user', methods=['POST'])
-def create_user():
-
-    req_args = request.args
-
-    if User.validate_user_create_data(req_args):
-        first_name = req_args['first_name'] if ('first_name' in req_args) else ""
-        last_name = req_args['last_name'] if ('last_name' in req_args) else ""
-        phone = req_args['phone'] if ('phone' in req_args) else ""
-
-        user = User(req_args['login'], req_args['email'], req_args['password'], first_name, last_name, phone)
-        msg = "USER REGISTRATION SUCCESSFUL"
-        try:
-            db.session.add(user)
-            db.session.commit()
-        except Exception as e:
-            msg = str(e)
-        resp = Response(json.dumps(msg), status=200)
-    else:
-        msg = "REQUIRED DATA NOT VALID"
-        resp = Response(json.dumps(msg), status=400)
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    resp.headers['Content-Type'] = 'application/json'
-    return resp
-
-@app.route('/smoke', methods=['GET'])
-def smoke():
-    resp = Response(json.dumps("OK"), status=200)
-    resp.headers['Access-Control-Allow-Origin'] = '*'
-    resp.headers['Content-Type'] = 'application/json'
-    return resp
-
-
-if __name__ == '__main__':
-
-    dbstatus = False
-    while dbstatus == False:
-        try:
-            db.create_all()
-        except:
-            time.sleep(2)
-        else:
-            dbstatus = True
-
-    app.run(debug=True, host='0.0.0.0')
